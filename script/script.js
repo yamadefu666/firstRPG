@@ -6,6 +6,12 @@ const FONT = "48px monospase";
 const WIDTH = 256;
 const HEIGHT = 256;
 
+//ドットの補間
+const SMOOTH =0;
+
+//素材をどの単位で切り取るか(元画像からして32*32ドットか・・・？)
+const TILESIZE = 32;
+
 //実画面の高さと幅
 let ctxWidth;
 let ctxHeight;
@@ -27,7 +33,7 @@ const drawMain = () =>{
 
     for(let y = 0; y < 32; y++ ){
         for(let x = 0; x < 64; x++){
-            Vctx.drawImage(fieldImg1, x * 32, y * 32);
+            Vctx.drawImage(fieldImg1, 0, 0, TILESIZE, TILESIZE, 0, 0, x * 32, y *32 );
         }
     }
 
@@ -64,6 +70,9 @@ const WmSize = () =>{
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
 
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = ctx.msImageSmoothingEnabled = SMOOTH;
+
     //実際に描画する高さと幅を仮想画面の高さと幅を掛け算してアス比を保ったまま拡大  
     ctxWidth = canvas.width;
     ctxHeight = canvas.height;
@@ -80,7 +89,7 @@ window.addEventListener('load', () =>{
 
     //ロードのタイミングで草を生やす
     fieldImg1 = new Image();
-    fieldImg1.src = "./image/grassField.png";
+    fieldImg1.src = "./image/mapImage1.png";
     
     //仮想画面
     ctxScreen = document.createElement("canvas");
