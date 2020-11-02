@@ -3,8 +3,8 @@
 //使用するフォント
 const FONT = "48px monospase";
 //仮想画面の高さと幅
-const WIDTH = 256;
-const HEIGHT = 256;
+const WIDTH = 512;
+const HEIGHT = 512;
 
 //ドットの補間
 const SMOOTH =0;
@@ -31,9 +31,9 @@ const drawMain = () =>{
     //仮想画面の2d描画コンテキストの取得
     const Vctx = ctxScreen.getContext("2d");
 
-    for(let y = 0; y < 32; y++ ){
-        for(let x = 0; x < 64; x++){
-            Vctx.drawImage(fieldImg1, 0, 0, TILESIZE, TILESIZE, 0, 0, x * 32, y *32 );
+    for(let x = 0; x < 32; x++ ){
+        for(let y = 0; y < 32; y++){
+            Vctx.drawImage(fieldImg1, 0, 0, TILESIZE, TILESIZE, 0, 0, x, y);
         }
     }
 
@@ -73,7 +73,8 @@ const WmSize = () =>{
     const ctx = canvas.getContext("2d");
     ctx.imageSmoothingEnabled = ctx.msImageSmoothingEnabled = SMOOTH;
 
-    //実際に描画する高さと幅を仮想画面の高さと幅を掛け算してアス比を保ったまま拡大  
+    //実際に描画する高さと幅を仮想画面の高さと幅を掛け算してアス比を保ったまま拡大 
+    
     ctxWidth = canvas.width;
     ctxHeight = canvas.height;
     if(ctxWidth/WIDTH < ctxHeight/HEIGHT){
@@ -81,6 +82,7 @@ const WmSize = () =>{
     }else{
         ctxWidth = ctxHeight * WIDTH/HEIGHT;
     }
+    
 }
 
 
