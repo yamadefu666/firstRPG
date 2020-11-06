@@ -1,5 +1,8 @@
 "use strict";
 
+//PCのデカさ
+const CHARHEIGHT = 32;
+const CHARWIDTH = 16;
 //使用するフォント
 const FONT = "48px monospase";
 //仮想画面の高さと幅
@@ -13,16 +16,16 @@ const MAP_HEIGHT = 32;
 //ドットの補間
 const SMOOTH =0;
 
-//素材をどの単位で切り取るか(元画像からして32*32ドットか・・・？)
-const TILESIZE = 32;
+//素材をどの単位で切り取るか(元画像からして16*16ドットか・・・？)
+const TILESIZE = 16;
 
 /**
- * 元画像を32*32を1マスとした時
+ * 元画像を16*16を1マスとした時
  * @param {number} -TILECOLMUN -タイル列数
  * @param {number} -TILEROW -タイル行数
  */
-const TILECOLMUN = 8;
-const TILEROW = 12;
+const TILECOLMUN = 16;
+const TILEROW = 24;
 
 //実画面の高さと幅
 let ctxWidth;
@@ -34,17 +37,23 @@ let ctxFrame = 0;
 let ctxScreen;
 //とりあえず草を生やす画像
 let fieldImg1;
+//PCの画像
+let playerImg;
+
+//イメージのパス
+const fieldImgPath1 = "./image/mapImage1.png";
+const playerImgPath = "./image/character01.png";
 
 //マップ
 const gameMap = [
- 0,  3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 3,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-40,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -76,21 +85,39 @@ const drawMain = () =>{
     
     //仮想画面の2d描画コンテキストの取得
     const Vctx = ctxScreen.getContext("2d");
+    
 
-    for(let y = 0; y < 32; y++ ){
-        for(let x = 0; x < 32; x++){
+    //マップの描画
+    for(let y = 0; y < 64; y++ ){
+        for(let x = 0; x < 64; x++){
             drawTile(Vctx, x * TILESIZE, y * TILESIZE, gameMap[ y * MAP_WIDTH + x]);
         }
     }
-
-    Vctx.font = FONT;
-    Vctx.fillText("Hello World" + ctxFrame, ctxFrame/10, 64);
+    
+    //キャラクターの描画
+    Vctx.drawImage(playerImg, 0, 8, CHARWIDTH, 
+                   CHARHEIGHT, WIDTH/2, HEIGHT/2, 
+                   CHARWIDTH, CHARHEIGHT );
+                   
+    // Vctx.font = FONT;
+    // Vctx.fillText("Hello World" + ctxFrame, ctxFrame/10, 64);
 
 }
 const drawTile = (Vctx, x, y, mapIndex) =>{
     const ix = (mapIndex % TILECOLMUN) * TILESIZE;
     const iy = Math.floor(mapIndex / TILECOLMUN) * TILESIZE;
     Vctx.drawImage(fieldImg1, ix, iy, TILESIZE, TILESIZE, x, y, TILESIZE, TILESIZE);
+}
+
+const LoadImage = () =>{
+    
+    //マップイメージ
+    fieldImg1 = new Image();
+    fieldImg1.src = fieldImgPath1;
+    //PCイメージ
+    playerImg = new Image();
+    playerImg.src = playerImgPath;
+
 }
 //描画関連
 const WmPaint = () =>{
@@ -140,9 +167,8 @@ const WmSize = () =>{
 //onLoadイベントをwindow全体に設定する
 window.addEventListener('load', () =>{
 
-    //ロードのタイミングで草を生やす
-    fieldImg1 = new Image();
-    fieldImg1.src = "./image/mapImage1.png";
+    //ページロードのタイミングで画像を読み込む関数を呼び出す
+    LoadImage();
     
     //仮想画面
     ctxScreen = document.createElement("canvas");
