@@ -1,13 +1,22 @@
 "use strict";
 
+/**
+ * キーの押下状態を調べるためのオブジェクト
+ * このオブジェクトはプロジェクトのどこからでも参照できるように
+ * window オブジェクトのカスタムプロパティとして設定する
+ * @global
+ * @type {object}
+*/
+window.isKeyDown = {};
+
 //PCのデカさ
 const CHARHEIGHT = 32;
 const CHARWIDTH = 16;
 //使用するフォント
 const FONT = "48px monospase";
 //仮想画面の高さと幅
-const WIDTH = 256;
-const HEIGHT = 256;
+const WIDTH = 560;
+const HEIGHT = 304;
 
 //マップを32タイル×32タイルで描画する
 const MAP_WIDTH = 32;
@@ -40,6 +49,10 @@ let fieldImg1;
 //PCの画像
 let playerImg;
 
+//PCの座標
+let PlayerX = 5;
+let PlayerY = 0;
+
 //イメージのパス
 const fieldImgPath1 = "./image/mapImage1.png";
 const playerImgPath = "./image/character01.png";
@@ -47,17 +60,17 @@ const playerImgPath = "./image/character01.png";
 //マップ
 const gameMap = [
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0, 36, 37, 38, 39,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0, 52, 53, 54, 55,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0, 68, 69, 70, 71,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0, 84, 85, 86, 87,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 40, 43,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, 88, 91,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -90,15 +103,22 @@ const drawMain = () =>{
     //マップの描画
     for(let y = 0; y < 64; y++ ){
         for(let x = 0; x < 64; x++){
-            drawTile(Vctx, x * TILESIZE, y * TILESIZE, gameMap[ y * MAP_WIDTH + x]);
+            let px = PlayerX + x;
+            let py = PlayerY + y;
+            drawTile(Vctx, x * TILESIZE, y * TILESIZE, gameMap[ py * MAP_WIDTH + px]);
         }
     }
     
+    Vctx.fillStyle = "#ff0000";
+    Vctx.fillRect(0, HEIGHT/2 - 1, WIDTH, 2);
+    Vctx.fillRect(WIDTH/2 - 1, 0, 2, HEIGHT);
+
     //キャラクターの描画
-    Vctx.drawImage(playerImg, 0, 8, CHARWIDTH, 
-                   CHARHEIGHT, WIDTH/2, HEIGHT/2, 
+    Vctx.drawImage(playerImg, 0, 8, 
+                   CHARWIDTH, CHARHEIGHT, 
+                   WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
-                   
+
     // Vctx.font = FONT;
     // Vctx.fillText("Hello World" + ctxFrame, ctxFrame/10, 64);
 
@@ -163,8 +183,32 @@ const WmSize = () =>{
     
 }
 
+ // キーの押下時に呼び出されるイベントリスナーを設定する
+ window.addEventListener('keydown', (event) => {
+    // キーの押下状態を管理するオブジェクトに押下されたことを設定する
+    isKeyDown[`key_${event.key}`] = true;
 
-//onLoadイベントをwindow全体に設定する
+    if(window.isKeyDown.key_ArrowLeft === true){
+        PlayerX--; // アローキーの左
+    }
+    if(window.isKeyDown.key_ArrowRight === true){
+        PlayerX++; // アローキーの右
+    }
+    if(window.isKeyDown.key_ArrowUp === true){
+        PlayerY--; // アローキーの上
+    }
+    if(window.isKeyDown.key_ArrowDown === true){
+        PlayerY++; // アローキーの下
+    }
+
+}, false);
+// キーが離された時に呼び出されるイベントリスナーを設定する
+window.addEventListener('keyup', (event) => {
+    // キーが離されたことを設定する
+    isKeyDown[`key_${event.key}`] = false;
+}, false);
+
+//onLoadイベントをwindow全体に設定する（ブラウザ起動時のイベント）
 window.addEventListener('load', () =>{
 
     //ページロードのタイミングで画像を読み込む関数を呼び出す

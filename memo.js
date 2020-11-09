@@ -34,3 +34,20 @@ ctx.drawImage(image, dx, dy, dw, dh);
  * 9つの時は指定した位置から指定したデカさ分だけトリミングした画像を、canvasの指定した位置に指定したデカさで張られる（順番注意：トリミングが先）
  */
 ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw, dh);
+
+//canvas2d fillRect関数（四角形の描画）
+/**
+ * 指定された座標に短形（四角形のこと）を描画する
+ * @param {number} x -塗りつぶす短形の左上のX座標
+ * @param {number} y -塗りつぶす短形の左上のY座標
+ * @param {number} w -塗りつぶす短形の横幅
+ * @param {number} h -塗りつぶす短形の高さ
+ */
+
+AudioContext.fillRect(x, y, w, h);
+
+/* マップ地形と対応するタイル座標
+1 - 明るい草 => 0
+2- 暗い草 => 36〜39  (+ 16  :4行)
+3- 暗い土 => 40〜43  (+ 16  :4行)
+*/
