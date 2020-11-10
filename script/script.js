@@ -13,7 +13,8 @@ window.isKeyDown = {};
 const CHARHEIGHT = 32;
 const CHARWIDTH = 16;
 //使用するフォント
-const FONT = "48px monospase";
+const FONT = "12px monospase";
+const FONTSTYLE = "#ffffff";
 //仮想画面の高さと幅
 const WIDTH = 560;
 const HEIGHT = 304;
@@ -36,6 +37,9 @@ const TILESIZE = 16;
 const TILECOLMUN = 16;
 const TILEROW = 24;
 
+//ウインドウのスタイル
+const WNDSTYLE = "rgba(0, 0, 0, 0.75)";
+
 //実画面の高さと幅
 let ctxWidth;
 let ctxHeight;
@@ -50,7 +54,7 @@ let fieldImg1;
 let playerImg;
 
 //PCの座標
-let PlayerX = 5;
+let PlayerX = 0;
 let PlayerY = 0;
 
 //イメージのパス
@@ -59,7 +63,7 @@ const playerImgPath = "./image/character01.png";
 
 //マップ
 const gameMap = [
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 102,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0, 36, 37, 38, 39,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0, 52, 53, 54, 55,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0, 68, 69, 70, 71,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -101,17 +105,21 @@ const drawMain = () =>{
     
 
     //マップの描画
-    for(let y = 0; y < 64; y++ ){
-        for(let x = 0; x < 64; x++){
-            let px = PlayerX + x;
-            let py = PlayerY + y;
-            drawTile(Vctx, x * TILESIZE, y * TILESIZE, gameMap[ py * MAP_WIDTH + px]);
+    for(let dy = 0; dy < 64; dy++ ){
+        for(let dx = 0; dx < 64; dx++){
+            let px = PlayerX + dx;
+            let py = PlayerY + dy;
+            drawTile(Vctx, dx * TILESIZE, dy * TILESIZE, gameMap[ py * MAP_WIDTH + px]);
         }
     }
     
     Vctx.fillStyle = "#ff0000";
     Vctx.fillRect(0, HEIGHT/2 - 1, WIDTH, 2);
     Vctx.fillRect(WIDTH/2 - 1, 0, 2, HEIGHT);
+    
+    //デバッグウィンドウ
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(55, 269, 450, 30)
 
     //キャラクターの描画
     Vctx.drawImage(playerImg, 0, 8, 
@@ -119,8 +127,9 @@ const drawMain = () =>{
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
 
-    // Vctx.font = FONT;
-    // Vctx.fillText("Hello World" + ctxFrame, ctxFrame/10, 64);
+     Vctx.font = FONT;
+     Vctx.fillStyle = FONTSTYLE;
+     Vctx.fillText('x=' + PlayerX + 'y=' + PlayerY, 60, 283);
 
 }
 const drawTile = (Vctx, x, y, mapIndex) =>{
