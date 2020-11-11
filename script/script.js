@@ -26,6 +26,10 @@ const MAP_HEIGHT = 32;
 //ドットの補間
 const SMOOTH =0;
 
+//ゲーム開始位置（タイル座標）
+const START_X = 15;
+const START_Y = 30;
+
 //素材をどの単位で切り取るか(元画像からして16*16ドットか・・・？)
 const TILESIZE = 16;
 
@@ -54,8 +58,8 @@ let fieldImg1;
 let playerImg;
 
 //PCの座標
-let PlayerX = 0;
-let PlayerY = 0;
+let PlayerX = START_X * TILESIZE;  //17
+let PlayerY = START_Y * TILESIZE;   //9
 
 //イメージのパス
 const fieldImgPath1 = "./image/mapImage1.png";
@@ -78,6 +82,7 @@ const gameMap = [
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  250,  251,  252,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -92,24 +97,34 @@ const gameMap = [
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
- 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  154,  154,  154,  154,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  154,  154,  154,  154,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+ 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  154,  154,  154,  154,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
 ]
 
 const drawMain = () =>{
     
     //仮想画面の2d描画コンテキストの取得
     const Vctx = ctxScreen.getContext("2d");
+
+    let mx = Math.floor(PlayerX/TILESIZE);
+    let my = Math.floor(PlayerY/TILESIZE);
     
 
     //マップの描画
-    for(let dy = 0; dy < 64; dy++ ){
-        for(let dx = 0; dx < 64; dx++){
-            let px = PlayerX + dx;
-            let py = PlayerY + dy;
-            drawTile(Vctx, dx * TILESIZE, dy * TILESIZE, gameMap[ py * MAP_WIDTH + px]);
+    for(let dy = -9; dy <= 64; dy++ ){
+          //差分
+          let y = dy + 9;
+          //タイルY座標
+          let ty = my + dy;
+          //マップループ後のY座標
+          let py = (ty + MAP_HEIGHT) % MAP_HEIGHT;
+        for(let dx = -17; dx <= 64; dx++){
+            let x = dx + 17;
+            let tx = mx + dx;
+            let px = (tx + MAP_WIDTH) % MAP_WIDTH;
+            drawTile(Vctx, x * TILESIZE, 
+                     y * TILESIZE, gameMap[ py * MAP_WIDTH + px]);
         }
     }
     
@@ -129,7 +144,7 @@ const drawMain = () =>{
 
      Vctx.font = FONT;
      Vctx.fillStyle = FONTSTYLE;
-     Vctx.fillText('x=' + PlayerX + 'y=' + PlayerY, 60, 283);
+     Vctx.fillText('x=' + PlayerX + 'y=' + PlayerY + 'tile=' + gameMap[ my * MAP_WIDTH + mx], 60, 283);
 
 }
 const drawTile = (Vctx, x, y, mapIndex) =>{
@@ -209,6 +224,12 @@ const WmSize = () =>{
     if(window.isKeyDown.key_ArrowDown === true){
         PlayerY++; // アローキーの下
     }
+
+    //マップループ処理
+    PlayerX += (MAP_WIDTH * TILESIZE);
+    PlayerX %= (MAP_WIDTH * TILESIZE);
+    PlayerY += (MAP_HEIGHT * TILESIZE);
+    PlayerY %= (MAP_HEIGHT * TILESIZE);
 
 }, false);
 // キーが離された時に呼び出されるイベントリスナーを設定する
