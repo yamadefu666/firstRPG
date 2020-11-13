@@ -56,6 +56,11 @@ const WNDSTYLE = "rgba(0, 0, 0, 0.75)";
 //キー入力バッファ
 const Key = new Uint8Array(0x100);
 
+//PCの向き
+let xAngle = 1;
+let yAngle = 1;
+
+
 //実画面の高さと幅
 let ctxWidth;
 let ctxHeight;
