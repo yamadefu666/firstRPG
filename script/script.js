@@ -57,7 +57,7 @@ const WNDSTYLE = "rgba(0, 0, 0, 0.75)";
 const Key = new Uint8Array(0x100);
 
 //PCの向き
-let xAngle = 1;
+let xAngle = 0;
 let yAngle = 1;
 
 
@@ -160,7 +160,12 @@ const drawMain = () =>{
     Vctx.fillRect(55, 269, 450, 30)
 
     //キャラクターの描画
-    Vctx.drawImage(playerImg, 0, 8, 
+    if(ctxFrame >> 4 & 1){
+       xAngle = 0;
+    }else{
+       xAngle = 32;
+    }
+    Vctx.drawImage(playerImg, xAngle , 8 * yAngle, 
                    CHARWIDTH, CHARHEIGHT, 
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
@@ -237,15 +242,19 @@ const WmSize = () =>{
     isKeyDown[`key_${event.key}`] = true;
 
     if(window.isKeyDown.key_ArrowLeft === true){
+        yAngle = 5;
         PlayerX -= SPEED; // アローキーの左
     }
     if(window.isKeyDown.key_ArrowRight === true){
+        yAngle = 9;
         PlayerX += SPEED; // アローキーの右
     }
     if(window.isKeyDown.key_ArrowUp === true){
+        yAngle = 13;
         PlayerY -= SPEED; // アローキーの上
     }
     if(window.isKeyDown.key_ArrowDown === true){
+        yAngle = 1;
         PlayerY += SPEED; // アローキーの下
     }
 
