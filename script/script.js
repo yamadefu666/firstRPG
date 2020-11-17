@@ -213,22 +213,23 @@ const WmPaint = () =>{
 
 //フィールド進行処理
 const TickField = () => {
-    if(window.isKeyDown.key_ArrowLeft === true){
+    if(moveX != 0 || moveY != 0){}
+    else if(window.isKeyDown.key_ArrowLeft === true){
         yAngle = 5;
         moveX = -TILESIZE;
        // PlayerX -= SPEED; // アローキーの左
     }
-    if(window.isKeyDown.key_ArrowRight === true){
+    else if(window.isKeyDown.key_ArrowRight === true){
         yAngle = 9;
         moveX = TILESIZE;
         //PlayerX += SPEED; // アローキーの右
     }
-    if(window.isKeyDown.key_ArrowUp === true){
+    else if(window.isKeyDown.key_ArrowUp === true){
         yAngle = 13;
         moveY = -TILESIZE;
         //PlayerY -= SPEED; // アローキーの上
     }
-    if(window.isKeyDown.key_ArrowDown === true){
+    else if(window.isKeyDown.key_ArrowDown === true){
         yAngle = 1;
         moveY = TILESIZE;
         //PlayerY += SPEED; // アローキーの下
