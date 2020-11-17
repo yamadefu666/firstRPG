@@ -65,6 +65,10 @@ let yAngle = 1;
 let ctxWidth;
 let ctxHeight;
 
+//キー入力による移動量(X成分、Y成分)
+let moveX = 0;
+let moveY = 0;
+
 //内部カウンタ（とりあえず置いとく）
 let ctxFrame = 0;
 //仮想画面
@@ -207,10 +211,50 @@ const WmPaint = () =>{
     
 }
 
+//フィールド進行処理
+const TickField = () => {
+    if(window.isKeyDown.key_ArrowLeft === true){
+        yAngle = 5;
+        moveX = -TILESIZE;
+       // PlayerX -= SPEED; // アローキーの左
+    }
+    if(window.isKeyDown.key_ArrowRight === true){
+        yAngle = 9;
+        moveX = TILESIZE;
+        //PlayerX += SPEED; // アローキーの右
+    }
+    if(window.isKeyDown.key_ArrowUp === true){
+        yAngle = 13;
+        moveY = -TILESIZE;
+        //PlayerY -= SPEED; // アローキーの上
+    }
+    if(window.isKeyDown.key_ArrowDown === true){
+        yAngle = 1;
+        moveY = TILESIZE;
+        //PlayerY += SPEED; // アローキーの下
+    }
+    
+    //Math.sign()関数を使用し、プレイヤーの移動速度を制御
+    //プレイヤー座標
+    PlayerX += Math.sign(moveX);
+    PlayerY += Math.sign(moveY);
+
+    moveX -= Math.sign(moveX);
+    moveY -= Math.sign(moveY);
+
+     //マップループ処理
+     PlayerX += (MAP_WIDTH * TILESIZE);
+     PlayerX %= (MAP_WIDTH * TILESIZE);
+     PlayerY += (MAP_HEIGHT * TILESIZE);
+     PlayerY %= (MAP_HEIGHT * TILESIZE);
+}
+
 //イベント発生時の処理
 const WmTimer = ()=>{
     ctxFrame++;
     WmPaint(); 
+    //フィールド進行処理
+    TickField();
 }
 
 //キャンバスの取得とサイズの設定
@@ -241,35 +285,42 @@ const WmSize = () =>{
     // キーの押下状態を管理するオブジェクトに押下されたことを設定する
     isKeyDown[`key_${event.key}`] = true;
 
-    if(window.isKeyDown.key_ArrowLeft === true){
-        yAngle = 5;
-        PlayerX -= SPEED; // アローキーの左
-    }
-    if(window.isKeyDown.key_ArrowRight === true){
-        yAngle = 9;
-        PlayerX += SPEED; // アローキーの右
-    }
-    if(window.isKeyDown.key_ArrowUp === true){
-        yAngle = 13;
-        PlayerY -= SPEED; // アローキーの上
-    }
-    if(window.isKeyDown.key_ArrowDown === true){
-        yAngle = 1;
-        PlayerY += SPEED; // アローキーの下
-    }
+    //let c = event.keyCode;
 
-    //マップループ処理
-    PlayerX += (MAP_WIDTH * TILESIZE);
-    PlayerX %= (MAP_WIDTH * TILESIZE);
-    PlayerY += (MAP_HEIGHT * TILESIZE);
-    PlayerY %= (MAP_HEIGHT * TILESIZE);
+
+    //移動後のタイル座標判定
+    let mx = Math.floor(PlayerX/TILESIZE);
+    let my = Math.floor(PlayerY/TILESIZE);
+   
 
 }, false);
 // キーが離された時に呼び出されるイベントリスナーを設定する
 window.addEventListener('keyup', (event) => {
     // キーが離されたことを設定する
     isKeyDown[`key_${event.key}`] = false;
+    
+    /*
+    //moveX, moveYを初期化
+    if(window.isKeyDown.key_ArrowLeft === false){
+        moveX = 0;
+       // PlayerX -= SPEED; // アローキーの左
+    }
+    if(window.isKeyDown.key_ArrowRight === false){
+        moveX = 0;
+        //PlayerX += SPEED; // アローキーの右
+    }
+    if(window.isKeyDown.key_ArrowUp === false){
+        moveY = 0;
+        //PlayerY -= SPEED; // アローキーの上
+    }
+    if(window.isKeyDown.key_ArrowDown === false){
+        moveY = 0;
+        //PlayerY += SPEED; // アローキーの下
+    }
+    */
+
 }, false);
+
 
 //onLoadイベントをwindow全体に設定する（ブラウザ起動時のイベント）
 window.addEventListener('load', () =>{
