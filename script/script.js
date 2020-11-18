@@ -9,12 +9,15 @@
 */
 window.isKeyDown = {};
 
+//フレーム呼び出し間隔(ms)
+const INTERVAL = 40;
+
 //PCのデカさ
 const CHARHEIGHT = 32;
 const CHARWIDTH = 16;
 
-//PCの移動スピード（1回の押下で何ドット進むか）
-const SPEED = 8;
+//スクロール速度
+const SCROLL = 2;
 
 //使用するフォント
 const FONT = "12px monospase";
@@ -86,6 +89,10 @@ let PlayerY = START_Y * TILESIZE + TILESIZE/2;   //9
 const fieldImgPath1 = "./image/mapImage1.png";
 const playerImgPath = "./image/character01.png";
 
+//メッセージウインドウに表示させるメッセージ
+let message = null;
+
+
 //マップ関連 
 const G = 0;
 const T =1;
@@ -122,8 +129,8 @@ const gameMapBase = [
    2,   0,   0,   0,   0,   0,   0, 168, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 154, 155,   0,   0,   0,   0,   0,   0,   0,
    2,   0,   0,   0,   0,   0,   0, 184, 185, 186, 185, 186, 185, 186, 185, 122, 154, 123, 186, 185, 186, 185, 186, 185, 187,   0,   0,   0,   0,   0,   0,   0,
    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 154, 155,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0, 102,
-   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 154, 155,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
-   1,   1,   1,   0,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 154, 155,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
+   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 170, 155,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 154, 155,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
 ]
 
 const drawMain = () =>{
@@ -155,15 +162,13 @@ const drawMain = () =>{
         }
     }
     
-    Vctx.fillStyle = "#ff0000";
-    Vctx.fillRect(0, HEIGHT/2 - 1, WIDTH, 2);
-    Vctx.fillRect(WIDTH/2 - 1, 0, 2, HEIGHT);
-    
-    //デバッグウィンドウ
-    Vctx.fillStyle = WNDSTYLE;
-    Vctx.fillRect(55, 269, 450, 30)
+    //中心がわかるように補助線を引いていた
+    // Vctx.fillStyle = "#ff0000";
+    // Vctx.fillRect(0, HEIGHT/2 - 1, WIDTH, 2);
+    // Vctx.fillRect(WIDTH/2 - 1, 0, 2, HEIGHT);
 
     //キャラクターの描画
+    //ビット演算（16でわって、かつ、少数は切り捨て）
     if(ctxFrame >> 4 & 1){
        xAngle = 0;
     }else{
@@ -173,13 +178,31 @@ const drawMain = () =>{
                    CHARWIDTH, CHARHEIGHT, 
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
+    
+    drawMessage(Vctx);
+
+    //デバッグウィンドウ
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(55, 10, 450, 30)
 
      Vctx.font = FONT;
      Vctx.fillStyle = FONTSTYLE;
      Vctx.fillText('x=' + PlayerX + 'y=' + PlayerY + 'tile=' + gameMapBase
-    [ my * MAP_WIDTH + mx], 60, 283);
+    [ my * MAP_WIDTH + mx], 60, 25);
 
 }
+
+const drawMessage = (Vctx) =>{
+
+     //メッセージウィンドウ
+     Vctx.fillStyle = WNDSTYLE;
+     Vctx.fillRect(25, 250, 510, 50);
+     Vctx.font = FONT;
+     Vctx.fillStyle = FONTSTYLE;
+     Vctx.fillText(message, 60, 270);
+
+}
+
 const drawTile = (Vctx, x, y, mapIndex) =>{
     const ix = (mapIndex % TILECOLMUN) * TILESIZE;
     const iy = Math.floor(mapIndex / TILECOLMUN) * TILESIZE;
@@ -234,14 +257,36 @@ const TickField = () => {
         moveY = TILESIZE;
         //PlayerY += SPEED; // アローキーの下
     }
+
+    //移動後のタイル座標判定
+    let mx = Math.floor((PlayerX + moveX)/TILESIZE);
+    let my = Math.floor((PlayerY + moveY)/TILESIZE);
+    //マップループ処理
+    // mx += MAP_WIDTH;
+    // mx %= MAP_WIDTH;
+    // my += MAP_HEIGHT;
+    // mx %= MAP_HEIGHT;
+
+
+    //タイル番号
+    let m = gameMapBase[my * MAP_WIDTH + mx];
+    //侵入不可にする
+    if(m == 1 || m == 2){
+        moveX = 0;
+        moveY = 0;
+    }
+
+    if(m == 170){
+        message = 'ペカチュウを捕まえよう！';
+    }
     
     //Math.sign()関数を使用し、プレイヤーの移動速度を制御
     //プレイヤー座標
-    PlayerX += Math.sign(moveX);
-    PlayerY += Math.sign(moveY);
+    PlayerX += Math.sign(moveX) * SCROLL;
+    PlayerY += Math.sign(moveY) * SCROLL;
 
-    moveX -= Math.sign(moveX);
-    moveY -= Math.sign(moveY);
+    moveX -= Math.sign(moveX) * SCROLL;
+    moveY -= Math.sign(moveY) * SCROLL;
 
      //マップループ処理
      PlayerX += (MAP_WIDTH * TILESIZE);
@@ -287,11 +332,6 @@ const WmSize = () =>{
     isKeyDown[`key_${event.key}`] = true;
 
     //let c = event.keyCode;
-
-
-    //移動後のタイル座標判定
-    let mx = Math.floor(PlayerX/TILESIZE);
-    let my = Math.floor(PlayerY/TILESIZE);
    
 
 }, false);
@@ -338,6 +378,6 @@ window.addEventListener('load', () =>{
     //ブラウザのサイズに変更があるたびに、canvasのサイズを再設定（resizeイベント）
     window.addEventListener('resize', ()=>{WmSize()}, false);
     //40ms間隔でWmTimer関数を呼び出す
-    setInterval(()=>{WmTimer()}, 40);
+    setInterval(()=>{WmTimer()}, INTERVAL);
 }, false);
     
