@@ -78,6 +78,8 @@ let ctxFrame = 0;
 let ctxScreen;
 //とりあえず草を生やす画像
 let fieldImg1;
+//マップオブジェクトの画像
+let mapObjImg;
 //PCの画像
 let playerImg;
 
@@ -87,10 +89,12 @@ let PlayerY = START_Y * TILESIZE + TILESIZE/2;   //9
 
 //イメージのパス
 const fieldImgPath1 = "./image/mapImage1.png";
+const mapObjImgPath = "./image/MapObj.png";
 const playerImgPath = "./image/character01.png";
 
 //メッセージウインドウに表示させるメッセージ
-let message = null;
+let message1 = null;
+let message2 = null;
 
 
 //マップ関連 
@@ -133,6 +137,43 @@ const gameMapBase = [
    1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1, 152, 154, 155,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
 ]
 
+const  mapObj= [
+    102,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  36,  37,  38,  39,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  52,  53,  54,  55,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  68,  69,  70,  71,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,  84,  85,  86,  87,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  40,  43,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  88,  91,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   2,
+      0,   0,   0,   0,   0, 250, 251, 252,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
+      1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
+      2,  48,  48,  48,  48,  48,  48,  48,  48,  48,   1,   1,   1,   1,   1,   1,   6,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
+      2,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+      1, 102,   0,   0,   0,   0,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+      0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+      0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,   0,   0,   0,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   1,   1,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,   0,   0,   0,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   1,   1,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   0,   0,   0,   6,   6,   6,   6,   1,   1,   1,   1,   1,   1,
+     54,  48,  48,  48,  48,  48,  48,   6,   6,   6,  48,  48,  48,  48,  48,   1,   1,   1,   0,   0,   0,   0,   6,   6,   6,   0,   0,   0,   0,   0,   0,   0,
+     54,  48,  48,  48,  48,  48,  48,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,   0,   0,   0,   0,
+     54,  48,  48,  48,  48,  48,  48,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,   0,   0,   0,   0,
+     54,  48,  48,  48,  48,  48,  48,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   6,   0,   0,   0,   0,   0,   0,   0,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   6,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
+      0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
+   ]
+   
+
 const drawMain = () =>{
     
     //仮想画面の2d描画コンテキストの取得
@@ -161,6 +202,26 @@ const drawMain = () =>{
                      gameMapBase[ py * MAP_WIDTH + px]);
         }
     }
+
+    //マップオブジェクトの描画
+
+    for(let dy = - SCR_HEIGHT; dy <= 64; dy++ ){
+        //差分
+        let y = dy + SCR_HEIGHT;
+        //タイルY座標
+        let ty = my + dy;
+        //マップループ後のY座標
+        let py = (ty + MAP_HEIGHT) % MAP_HEIGHT;
+      for(let dx = - SCR_WIDTH; dx <= 64; dx++){
+          let x = dx + SCR_WIDTH;
+          let tx = mx + dx;
+          let px = (tx + MAP_WIDTH) % MAP_WIDTH;
+          drawObj(Vctx, 
+                   tx * TILESIZE + WIDTH/2 - PlayerX, 
+                   ty * TILESIZE + HEIGHT/2 - PlayerY, 
+                   mapObj[ py * MAP_WIDTH + px]);
+      }
+  }
     
     //中心がわかるように補助線を引いていた
     // Vctx.fillStyle = "#ff0000";
@@ -179,7 +240,7 @@ const drawMain = () =>{
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
     
-    drawMessage(Vctx);
+    drawmessage(Vctx);
 
     //デバッグウィンドウ
     Vctx.fillStyle = WNDSTYLE;
@@ -191,22 +252,36 @@ const drawMain = () =>{
     [ my * MAP_WIDTH + mx], 60, 25);
 
 }
-
-const drawMessage = (Vctx) =>{
-
+//メッセージ描画
+const drawmessage = (Vctx) =>{
+    if(!message1){
+        return;
+    }
      //メッセージウィンドウ
      Vctx.fillStyle = WNDSTYLE;
      Vctx.fillRect(25, 250, 510, 50);
      Vctx.font = FONT;
      Vctx.fillStyle = FONTSTYLE;
-     Vctx.fillText(message, 60, 270);
+     Vctx.fillText(message1, 60, 270);
 
+     //メッセージが2行を超える場合は、その分変数を用意する（今のところ1行で済んでるのでいらない）
+    if(message2){
+        Vctx.fillText(message2, 60, 285);
+    }
 }
 
+//マップのベースとなる土や、草
 const drawTile = (Vctx, x, y, mapIndex) =>{
     const ix = (mapIndex % TILECOLMUN) * TILESIZE;
     const iy = Math.floor(mapIndex / TILECOLMUN) * TILESIZE;
     Vctx.drawImage(fieldImg1, ix, iy, TILESIZE, TILESIZE, x, y, TILESIZE, TILESIZE);
+}
+
+//マップの上に乗っけるもの
+const drawObj = (Vctx, x, y , mapIndex) =>{
+    const ix = (mapIndex % TILECOLMUN) * TILESIZE;
+    const iy = Math.floor(mapIndex / TILECOLMUN) * TILESIZE;
+    Vctx.drawImage(mapObjImg, ix, iy, TILESIZE, TILESIZE, x, y, TILESIZE, TILESIZE);
 }
 
 const LoadImage = () =>{
@@ -217,7 +292,15 @@ const LoadImage = () =>{
     //PCイメージ
     playerImg = new Image();
     playerImg.src = playerImgPath;
+    //マップオブジェクト（木とか）イメージ
+    mapObjImg = new Image();
+    mapObjImg.src = mapObjImgPath;
 
+}
+
+const setMessage = (v1, v2) =>{
+    message1 = v1;
+    message2 = v2;
 }
 //描画関連
 const WmPaint = () =>{
@@ -276,9 +359,12 @@ const TickField = () => {
         moveY = 0;
     }
 
-    if(m == 170){
-        message = 'ペカチュウを捕まえよう！';
-    }
+    //特定のタイルに移動した直後にメッセージをセットする関数を呼び出す
+    if(Math.abs(moveX) + Math.abs(moveY) == SCROLL ){
+        if(m == 170){
+            setMessage('ペカチュウを捕まえよう！', null);
+        }
+   }
     
     //Math.sign()関数を使用し、プレイヤーの移動速度を制御
     //プレイヤー座標
@@ -332,6 +418,9 @@ const WmSize = () =>{
     isKeyDown[`key_${event.key}`] = true;
 
     //let c = event.keyCode;
+
+    message1 = null;
+    message2 = null;
    
 
 }, false);
