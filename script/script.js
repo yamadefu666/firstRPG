@@ -319,7 +319,7 @@ const WmPaint = () =>{
 
 //フィールド進行処理
 const TickField = () => {
-    if(moveX != 0 || moveY != 0){}
+    if(moveX != 0 || moveY != 0 || message1){}
     else if(window.isKeyDown.key_ArrowLeft === true){
         yAngle = 5;
         moveX = -TILESIZE;
@@ -416,6 +416,11 @@ const WmSize = () =>{
  window.addEventListener('keydown', (event) => {
     // キーの押下状態を管理するオブジェクトに押下されたことを設定する
     isKeyDown[`key_${event.key}`] = true;
+    
+    //キーリピート状態の時は処理を行わない…？
+    // if(isKeyDown){
+    //     return;
+    // }
 
     //let c = event.keyCode;
 
