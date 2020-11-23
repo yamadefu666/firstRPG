@@ -38,6 +38,9 @@ const MAP_HEIGHT = 32;
 //ドットの補間
 const SMOOTH =0;
 
+//初期HP
+const START_HP = 20;
+
 //ゲーム開始位置（タイル座標）
 const START_X = 16;
 const START_Y = 30;
@@ -74,6 +77,9 @@ let moveY = 0;
 
 //内部カウンタ（とりあえず置いとく）
 let ctxFrame = 0;
+
+//アイテム
+let Item = 0;
 //仮想画面
 let ctxScreen;
 //とりあえず草を生やす画像
@@ -86,6 +92,18 @@ let playerImg;
 //PCの座標
 let PlayerX = START_X * TILESIZE + TILESIZE/2 ;  //17
 let PlayerY = START_Y * TILESIZE + TILESIZE/2;   //9
+
+/** PCのステータス情報
+ * @param {number} Ex - 経験値
+ * @param {number} HP - ヒットポイント
+ * @param {number} maxHP - 最大ヒットポイント
+ * @param {number} Lv - レベル
+*/
+
+let Ex = 0;
+let HP = START_HP;
+let maxHP = START_HP;
+let Lv = 1;
 
 //イメージのパス
 const fieldImgPath1 = "./image/mapImage1.png";
@@ -159,7 +177,7 @@ const  mapObj= [
       1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
       2,  48,  48,  48,  48,  48,  48,  48,  48,  48,   1,   1,   1,   1,   1,   1,   6,   1,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   2,
       2,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
-      1, 102,   0,   0,   0,   0,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
+      1, 102,  48,  48,  48,  48,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
       0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,  48,  48,  48,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   6,   6,   6,   6,   6,   2,
       0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,   0,   0,   0,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   1,   1,   1,   1,   1,   1,
       0,   0,   0,   0,   0,   6,   6,   6,   6,   6,  48,   0,   0,   0,  48,   6,   6,   6,   0,   1,   1,   2,   6,   6,   6,   6,   1,   1,   1,   1,   1,   1,
@@ -239,10 +257,16 @@ const drawMain = () =>{
                    CHARWIDTH, CHARHEIGHT, 
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
-    
-    drawmessage(Vctx);
 
-    //デバッグウィンドウ
+    
+    //ステータスウィンドウの描画（常に出しておく）
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(4, 4, 44, 45);
+
+    drawmessage(Vctx);
+    drawStatus(Vctx);
+
+    //デバッグウィンドウの描画（あとで消す）
     Vctx.fillStyle = WNDSTYLE;
     Vctx.fillRect(55, 10, 450, 30)
 
@@ -257,17 +281,27 @@ const drawmessage = (Vctx) =>{
     if(!message1){
         return;
     }
-     //メッセージウィンドウ
-     Vctx.fillStyle = WNDSTYLE;
-     Vctx.fillRect(25, 250, 510, 50);
-     Vctx.font = FONT;
-     Vctx.fillStyle = FONTSTYLE;
-     Vctx.fillText(message1, 60, 270);
+    //メッセージウィンドウの描画
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(25, 250, 510, 50);
+    Vctx.font = FONT;
+    Vctx.fillStyle = FONTSTYLE;
+    Vctx.fillText(message1, 60, 270);
 
      //メッセージが2行を超える場合は、その分変数を用意する（今のところ1行で済んでるのでいらない）
     if(message2){
         Vctx.fillText(message2, 60, 285);
     }
+}
+
+const drawStatus = (Vctx) =>{
+
+    Vctx.font = FONT;
+    Vctx.fillStyle = FONTSTYLE;
+    Vctx.fillText('Lv ' + Lv,  6, 17);
+    Vctx.fillText('HP ' + HP,  6, 32);
+    Vctx.fillText('Ex ' + Ex,  6, 47);
+
 }
 
 //マップのベースとなる土や、草
@@ -364,7 +398,19 @@ const TickField = () => {
         if(m == 170){
             setMessage('ペカチュウを捕まえよう！', null);
         }
+
+        //モンスターボールをゲットする
+        if(m == 102){
+            Item = 1;
+            setMessage('モンスターボールをゲットしました', null);
+        }
+        
+        //草むらでのエンカウント
+        if(m == 0 && Math.random() * 3 < 1){
+            setMessage('パケモンが飛び出してきた！！', null);
+        }
    }
+
     
     //Math.sign()関数を使用し、プレイヤーの移動速度を制御
     //プレイヤー座標
