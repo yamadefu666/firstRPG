@@ -80,14 +80,20 @@ let ctxFrame = 0;
 
 //アイテム
 let Item = 0;
+//戦闘フェーズ
+let Phase = 0;
+
 //仮想画面
 let ctxScreen;
+
 //とりあえず草を生やす画像
 let fieldImg1;
 //マップオブジェクトの画像
 let mapObjImg;
 //PCの画像
 let playerImg;
+//ポケモンの画像
+let monsterImg1;
 
 //PCの座標
 let PlayerX = START_X * TILESIZE + TILESIZE/2 ;  //17
@@ -109,6 +115,7 @@ let Lv = 1;
 const fieldImgPath1 = "./image/mapImage1.png";
 const mapObjImgPath = "./image/MapObj.png";
 const playerImgPath = "./image/character01.png";
+const monsterImgPath1 = "./image/pikachu.png"
 
 //メッセージウインドウに表示させるメッセージ
 let message1 = null;
@@ -190,13 +197,10 @@ const  mapObj= [
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,
       0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   6,   6,   6,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1,   1
    ]
-   
 
-const drawMain = () =>{
-    
-    //仮想画面の2d描画コンテキストの取得
-    const Vctx = ctxScreen.getContext("2d");
-    
+//マップ全般の描画処理
+const drawMap = (Vctx) => {
+       
     //PCがいるタイル座標
     let mx = Math.floor(PlayerX/TILESIZE);
     let my = Math.floor(PlayerY/TILESIZE);
@@ -258,14 +262,6 @@ const drawMain = () =>{
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
 
-    
-    //ステータスウィンドウの描画（常に出しておく）
-    Vctx.fillStyle = WNDSTYLE;
-    Vctx.fillRect(4, 4, 44, 45);
-
-    drawmessage(Vctx);
-    drawStatus(Vctx);
-
     //デバッグウィンドウの描画（あとで消す）
     Vctx.fillStyle = WNDSTYLE;
     Vctx.fillRect(55, 10, 450, 30)
@@ -274,6 +270,37 @@ const drawMain = () =>{
      Vctx.fillStyle = FONTSTYLE;
      Vctx.fillText('x=' + PlayerX + 'y=' + PlayerY + 'tile=' + gameMapBase
     [ my * MAP_WIDTH + mx], 60, 25);
+
+}
+
+//戦闘画面の描画
+const drawFight = (Vctx) => {
+    //背景色が黒の戦闘画面
+    Vctx.fillStyle = '#000000';
+    Vctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    Vctx.drawImage(monsterImg1, WIDTH/2, HEIGHT/2)
+
+}
+
+const drawMain = () =>{
+    
+    //仮想画面の2d描画コンテキストの取得
+    const Vctx = ctxScreen.getContext("2d");
+
+    //描画関数
+    if(Phase == 0){
+       drawMap(Vctx);
+    }else{
+       drawFight(Vctx);
+    }
+   
+    //ステータスウィンドウの描画（常に出しておく）
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(4, 4, 44, 45);
+
+    drawmessage(Vctx);
+    drawStatus(Vctx);
 
 }
 //メッセージ描画
@@ -329,6 +356,9 @@ const LoadImage = () =>{
     //マップオブジェクト（木とか）イメージ
     mapObjImg = new Image();
     mapObjImg.src = mapObjImgPath;
+    //ポケモンのイメージ
+    monsterImg1 = new Image();
+    monsterImg1.src = monsterImgPath1;
 
 }
 
@@ -396,18 +426,20 @@ const TickField = () => {
     //特定のタイルに移動した直後にメッセージをセットする関数を呼び出す
     if(Math.abs(moveX) + Math.abs(moveY) == SCROLL ){
         if(m == 170){
-            setMessage('ペカチュウを捕まえよう！', null);
+            setMessage('ペカチュウをつかまえよう！', null);
         }
 
         //モンスターボールをゲットする
         if(m == 102){
             Item = 1;
-            setMessage('モンスターボールをゲットしました', null);
+            setMessage('モンスターボールをゲットした', null);
         }
         
         //草むらでのエンカウント
         if(m == 0 && Math.random() * 3 < 1){
-            setMessage('パケモンが飛び出してきた！！', null);
+            //ポケモン出現フェーズ
+            Phase = 1;
+            setMessage('パケモンがとびだしてきた！！', null);
         }
    }
 
@@ -462,6 +494,22 @@ const WmSize = () =>{
  window.addEventListener('keydown', (event) => {
     // キーの押下状態を管理するオブジェクトに押下されたことを設定する
     isKeyDown[`key_${event.key}`] = true;
+    
+    /** 各フェーズの役割
+     * 0 - マップの移動
+     * 1 - モンスターの出現
+     * 2 - 戦闘コマンド選択
+    */
+
+    if(Phase == 1 ){
+        Phase = 2;
+        setMessage('  たたかう', '  にげる');
+        return;
+    }
+
+    if(Phase == 2){
+        Phase = 0;
+    }
     
     //キーリピート状態の時は処理を行わない…？
     // if(isKeyDown){
