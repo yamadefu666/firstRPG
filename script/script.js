@@ -75,6 +75,9 @@ let ctxHeight;
 let moveX = 0;
 let moveY = 0;
 
+//カーソルの位置
+let cursor = 1;
+
 //内部カウンタ（とりあえず置いとく）
 let ctxFrame = 0;
 
@@ -82,6 +85,9 @@ let ctxFrame = 0;
 let Item = 0;
 //戦闘フェーズ
 let Phase = 0;
+
+//ポケモンの種類
+let monsterType;
 
 //仮想画面
 let ctxScreen;
@@ -93,7 +99,7 @@ let mapObjImg;
 //PCの画像
 let playerImg;
 //ポケモンの画像
-let monsterImg1;
+let monsterImg;
 
 //PCの座標
 let PlayerX = START_X * TILESIZE + TILESIZE/2 ;  //17
@@ -115,7 +121,7 @@ let Lv = 1;
 const fieldImgPath1 = "./image/mapImage1.png";
 const mapObjImgPath = "./image/MapObj.png";
 const playerImgPath = "./image/character01.png";
-const monsterImgPath1 = "./image/pikachu.png"
+const monsterImgPath = "./image/monsters.png"
 
 //メッセージウインドウに表示させるメッセージ
 let message1 = null;
@@ -262,6 +268,13 @@ const drawMap = (Vctx) => {
                    WIDTH/2 - CHARWIDTH/2, HEIGHT/2 - CHARHEIGHT/2, 
                    CHARWIDTH, CHARHEIGHT );
 
+    //ステータスウィンドウの描画（常に出しておく）
+    Vctx.fillStyle = WNDSTYLE;
+    Vctx.fillRect(4, 4, 44, 45);
+
+    drawmessage(Vctx);
+    drawStatus(Vctx);
+
     //デバッグウィンドウの描画（あとで消す）
     Vctx.fillStyle = WNDSTYLE;
     Vctx.fillRect(55, 10, 450, 30)
@@ -279,7 +292,19 @@ const drawFight = (Vctx) => {
     Vctx.fillStyle = '#000000';
     Vctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    Vctx.drawImage(monsterImg1, WIDTH/2, HEIGHT/2)
+    let w = monsterImg.width/3;
+    let h = monsterImg.height;
+
+    Vctx.drawImage(monsterImg, monsterType * w, 0, w, h, Math.floor(WIDTH/2 - w/2), Math.floor(HEIGHT/2 - h/2), w, h);
+
+    drawmessage(Vctx);
+    drawStatus(Vctx);
+
+    //戦闘コマンド選択中の場合カーソルを描画
+    if(Phase == 2){
+        Vctx.fillText('→', 45, 270 + 14 * cursor)
+    } 
+
 
 }
 
@@ -294,13 +319,6 @@ const drawMain = () =>{
     }else{
        drawFight(Vctx);
     }
-   
-    //ステータスウィンドウの描画（常に出しておく）
-    Vctx.fillStyle = WNDSTYLE;
-    Vctx.fillRect(4, 4, 44, 45);
-
-    drawmessage(Vctx);
-    drawStatus(Vctx);
 
 }
 //メッセージ描画
@@ -357,8 +375,8 @@ const LoadImage = () =>{
     mapObjImg = new Image();
     mapObjImg.src = mapObjImgPath;
     //ポケモンのイメージ
-    monsterImg1 = new Image();
-    monsterImg1.src = monsterImgPath1;
+    monsterImg = new Image();
+    monsterImg.src = monsterImgPath;
 
 }
 
@@ -439,6 +457,8 @@ const TickField = () => {
         if(m == 0 && Math.random() * 3 < 1){
             //ポケモン出現フェーズ
             Phase = 1;
+
+            monsterType = 0;
             setMessage('パケモンがとびだしてきた！！', null);
         }
    }
@@ -501,15 +521,26 @@ const WmSize = () =>{
      * 2 - 戦闘コマンド選択
     */
 
+   if(Phase == 3){
+    Phase = 0;
+   }
+
     if(Phase == 1 ){
         Phase = 2;
-        setMessage('  たたかう', '  にげる');
+        setMessage('　たたかう', '　にげる');
         return;
     }
 
     if(Phase == 2){
-        Phase = 0;
+        if(window.isKeyDown.key_Enter === true){
+            Phase = 3;
+            return;
+        }else{
+            cursor = 1 - cursor;
+            return;
+        }  
     }
+    
     
     //キーリピート状態の時は処理を行わない…？
     // if(isKeyDown){
