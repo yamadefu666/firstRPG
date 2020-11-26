@@ -463,7 +463,6 @@ const TickField = () => {
         }
    }
 
-    
     //Math.sign()関数を使用し、プレイヤーの移動速度を制御
     //プレイヤー座標
     PlayerX += Math.sign(moveX) * SCROLL;
@@ -477,6 +476,16 @@ const TickField = () => {
      PlayerX %= (MAP_WIDTH * TILESIZE);
      PlayerY += (MAP_HEIGHT * TILESIZE);
      PlayerY %= (MAP_HEIGHT * TILESIZE);
+}
+
+//経験値加算処理
+const addEx = (val) =>{
+    Ex += val;
+
+     while(Lv * (Lv + 1) * 2 <= Ex){
+         Lv++ ;
+         maxHP += 4 + Math.floor(Math.random() * 3);
+     }
 }
 
 //イベント発生時の処理
@@ -534,11 +543,15 @@ const WmSize = () =>{
     if(Phase == 2){
         if(window.isKeyDown.key_Enter === true){
             Phase = 3;
-            return;
         }else{
             cursor = 1 - cursor;
             return;
         }  
+    }
+
+    if(Phase == 3){
+        Phase = 0;        
+        addEx(3 - monsterType); 
     }
     
     
