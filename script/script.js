@@ -294,10 +294,13 @@ const drawFight = (Vctx) => {
     Vctx.fillStyle = '#000000';
     Vctx.fillRect(0, 0, WIDTH, HEIGHT);
 
-    let w = monsterImg.width/3;
-    let h = monsterImg.height;
+    if(Phase <= 5){
 
-    Vctx.drawImage(monsterImg, monsterType * w, 0, w, h, Math.floor(WIDTH/2 - w/2), Math.floor(HEIGHT/2 - h/2), w, h);
+       let w = monsterImg.width/3;
+       let h = monsterImg.height;
+
+       Vctx.drawImage(monsterImg, monsterType * w, 0, w, h, Math.floor(WIDTH/2 - w/2), Math.floor(HEIGHT/2 - h/2), w, h);
+    }
 
     drawmessage(Vctx);
     drawStatus(Vctx);
@@ -457,11 +460,8 @@ const TickField = () => {
         
         //草むらでのエンカウント
         if(m == 0 && Math.random() * 3 < 1){
-            //ポケモン出現フェーズ
-            Phase = 1;
-
-            monsterType = 0;
-            setMessage('あっ、やせいの' +  monsterName[monsterType] + 'がとびだしてきた！！', null);
+            //ポケモン出現処理
+            appearMonster(2);
         }
    }
 
@@ -478,6 +478,13 @@ const TickField = () => {
      PlayerX %= (MAP_WIDTH * TILESIZE);
      PlayerY += (MAP_HEIGHT * TILESIZE);
      PlayerY %= (MAP_HEIGHT * TILESIZE);
+}
+
+const appearMonster = (t) =>{
+    //出現フェーズ
+    Phase = 1;
+    monsterType = t;
+    setMessage('あっ、やせいの' +  monsterName[monsterType] + 'がとびだしてきた！！', null);
 }
 
 const Action = () =>{
