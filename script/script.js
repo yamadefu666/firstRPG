@@ -460,8 +460,15 @@ const TickField = () => {
         
         //草むらでのエンカウント
         if(m == 0 && Math.random() * 3 < 1){
+            let t = Math.abs(PlayerX/TILESIZE - START_X) + Math.abs(PlayerY/TILESIZE - START_Y);
+            //出現レベルを0〜0．5上昇させる
+            t += Math.random() * 4
+            t = Math.floor(t);
+            //上限処理
+            t = Math.min(t, monsterName.length - 1);
+           
             //ポケモン出現処理
-            appearMonster(2);
+            appearMonster(t);
         }
    }
 
@@ -491,14 +498,21 @@ const Action = () =>{
     Phase++;
 
     if(Phase == 3){
-        setMessage(monsterName[monsterType] + 'の攻撃！', 99 + 'のダメージ！');
-        Phase = 7;
+        const d = getDamege(5 - monsterType);
+        setMessage(monsterName[monsterType] + 'の攻撃！', d + 'のダメージ！');
+        //被ダメージによるPCのHP減少
+        HP -= d;
+        if(HP <= 0){
+            //gameoverフェーズ
+            Phase = 7;
+        }   
         return;
     }
 
     //たたかう選択時
     if(cursor == 0){
-        setMessage('やまでふの攻撃！', 1 + 'のダメージ！');
+        const d = getDamege(Lv + 1);
+        setMessage('やまでふの攻撃！', d + 'のダメージ！');
         Phase = 5;
         return;
     }
@@ -514,7 +528,6 @@ const Action = () =>{
     setMessage('にげられなかった！', null);
     
 
-
 }
 
 const commandFight = () =>{
@@ -522,6 +535,14 @@ const commandFight = () =>{
     Phase = 2;
     cursor = 0;
     setMessage('　たたかう', '　にげる');
+}
+/**
+ * ダメージ計算関数（PCもモンスターも同様のものを使う） 
+ * @param {number} a -攻撃力 
+ */
+const getDamege = (a) =>{
+    //攻撃力の1から2倍のダメージを計算して返す
+    return Math.floor(a * (1 + Math.random()));
 }
 
 //経験値加算処理
