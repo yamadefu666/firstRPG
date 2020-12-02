@@ -89,6 +89,12 @@ let Phase = 0;
 //ポケモンの種類
 let monsterType;
 
+//ポケモンのHP
+let monsterHP;
+
+//行動順
+let order;
+
 //仮想画面
 let ctxScreen;
 
@@ -348,10 +354,19 @@ const drawStatus = (Vctx) =>{
 
     Vctx.font = FONT;
     Vctx.fillStyle = FONTSTYLE;
-    Vctx.fillText('Lv ' + Lv,  6, 17);
-    Vctx.fillText('HP ' + HP,  6, 32);
-    Vctx.fillText('Ex ' + Ex,  6, 47);
+    Vctx.fillText('Lv ' ,  6, 17);
+    drawTextR(Vctx, Lv, 48, 17);
+    Vctx.fillText('HP ' ,  6, 32);
+    drawTextR(Vctx, HP, 48, 32);
+    Vctx.fillText('Ex ' ,  6, 47);
+    drawTextR(Vctx, Ex, 48, 47);
 
+}
+
+const drawTextR = (Vctx, str, x, y) =>{
+    Vctx.textAlign = 'right';
+    Vctx.fillText(str, x, y);
+    Vctx.textAlign = 'left';
 }
 
 //マップのベースとなる土や、草
@@ -406,6 +421,10 @@ const WmPaint = () =>{
 
 //フィールド進行処理
 const TickField = () => {
+    if(Phase != 0){
+        return;
+    }
+
     if(moveX != 0 || moveY != 0 || message1){}
     else if(window.isKeyDown.key_ArrowLeft === true){
         yAngle = 5;
@@ -491,13 +510,15 @@ const appearMonster = (t) =>{
     //出現フェーズ
     Phase = 1;
     monsterType = t;
+    monsterHP = 20 -(t * 4 + 5);
     setMessage('あっ、やせいの' +  monsterName[monsterType] + 'がとびだしてきた！！', null);
 }
 
 const Action = () =>{
     Phase++;
-
-    if(Phase == 3){
+    
+    //ポケモンの行動順
+    if(((Phase + order) & 1) == 0){
         const d = getDamege(5 - monsterType);
         setMessage(monsterName[monsterType] + 'の攻撃！', d + 'のダメージ！');
         //被ダメージによるPCのHP減少
@@ -509,11 +530,14 @@ const Action = () =>{
         return;
     }
 
-    //たたかう選択時
+    //たたかう選択時（プレイヤーの行動順）
     if(cursor == 0){
         const d = getDamege(Lv + 1);
         setMessage('やまでふの攻撃！', d + 'のダメージ！');
-        Phase = 5;
+        monsterHP -= d;
+        if(monsterHP <= 0){
+            Phase = 5;
+        }
         return;
     }
 
@@ -557,10 +581,12 @@ const addEx = (val) =>{
 
 //イベント発生時の処理
 const WmTimer = ()=>{
-    ctxFrame++;
-    WmPaint(); 
-    //フィールド進行処理
-    TickField();
+    if(!message1){
+        ctxFrame++;
+        //フィールド進行処理
+        TickField();
+    }
+    WmPaint();
 }
 
 //キャンバスの取得とサイズの設定
@@ -595,6 +621,8 @@ const WmSize = () =>{
      * 0 - マップの移動
      * 1 - モンスターの出現
      * 2 - 戦闘コマンド選択
+     * 3 - 敵の行動順
+     * 4
     */
 
 
@@ -605,6 +633,8 @@ const WmSize = () =>{
 
     if(Phase == 2){
         if(window.isKeyDown.key_Enter === true){
+            //戦闘行動順
+            order = Math.floor(Math.random() * 2);
             //戦闘行動処理
             Action();
         }else{
