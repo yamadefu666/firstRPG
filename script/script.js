@@ -17,7 +17,7 @@ const CHARHEIGHT = 32;
 const CHARWIDTH = 16;
 
 //スクロール速度
-const SCROLL = 8;
+const SCROLL = 2;
 
 //使用するフォント
 const FONT = "12px monospase";
